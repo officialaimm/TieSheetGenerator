@@ -19,6 +19,11 @@ class TieSheet:
         self.FIXTURES_DAY = "Day"
         #TABLE_CONSTANT
         self.TABLE_TITLE = "Table"
+        self.TABLE_INDEX = "S.N."
+        self.TABLE_PLAYER = "Participant"
+        self.TABLE_PLAYED = "Games Played"
+        self.TABLE_POINTS = "Points"
+        self.TABLE_WINS = "Wins"
         #RULE_CONSTANT
         self.RULES_TITLE = "Rules"
     def generateFixtures(self):
@@ -36,6 +41,10 @@ class TieSheet:
         #empty row
         sheet.write_row(row,0,[])
         row+=1
+        #will be handy for formula in table sheet
+        self.rowWithPointsStart = row+1
+        self.playerCol = "B"
+        self.pointsCol = "D"
         for index,fixture in enumerate(fixtures):
             #1-indexed
             index = index+1
@@ -55,8 +64,42 @@ class TieSheet:
                     playerIndex==0 and days or ''
                 ])
                 row+=1
+        #will be handy for formula in table sheet
+        self.rowWithPointsEnd = row
     def generateTable(self):
         sheet = self.xlsxFile.add_worksheet(self.TABLE_TITLE)
+        row = 0
+        sheet.write_row(row,0,[
+            self.TABLE_INDEX,
+            self.TABLE_PLAYER,
+            self.TABLE_PLAYED,
+            self.TABLE_POINTS,
+            self.TABLE_WINS
+        ])
+        #empty row
+        sheet.write_row(row,0,[])
+        row+=1
+        for index,participant in enumerate(self.participants):
+            sheet.write_row(row,0,[
+                index+1,
+                participant,
+                #matches played
+                "=COUNT(FILTER({fixtureSheet}!{fixturePointCol}{fixtureRowStart}:{fixturePointCol}{fixtureRowEnd},{fixtureSheet}!{fixturePlayerCol}{fixtureRowStart}:{fixturePlayerCol}{fixtureRowEnd}={column}{row}))"
+                .format(
+                    fixtureSheet=self.FIXTURES_TITLE,
+                    fixturePointCol=self.pointsCol,
+                    fixturePlayerCol=self.playerCol,
+                    fixtureRowStart=self.rowWithPointsStart,
+                    fixtureRowEnd=self.rowWithPointsEnd,
+                    column="B",
+                    row=row+1
+                ),
+                #points
+                "",
+                #wins
+                "",
+            ])
+            row+=1
     def generateRules(self):
         sheet = self.xlsxFile.add_worksheet(self.RULES_TITLE)
     def generate(self,participants,filename):
