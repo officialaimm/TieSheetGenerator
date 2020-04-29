@@ -26,10 +26,13 @@ class TieSheet:
         self.TABLE_WINS = "Wins"
         #RULE_CONSTANT
         self.RULES_TITLE = "Rules"
-    def generateFixtures(self):
-        sheet = self.xlsxFile.add_worksheet(self.FIXTURES_TITLE)
-        fixtures = list(combinations(self.participants,self.playersEachGame))
+    def generateFixture(self,participants,playersEachGame):
+        fixtures = list(combinations(participants,playersEachGame))
         shuffle(fixtures)
+        return fixtures
+    def generateFixtureSheet(self):
+        sheet = self.xlsxFile.add_worksheet(self.FIXTURES_TITLE)
+        fixtures = self.generateFixture(self.participants,self.playersEachGame)
         row = 0
         sheet.write_row(row,0,[
             self.FIXTURES_INDEX,
@@ -107,7 +110,7 @@ class TieSheet:
         #create xlsx file with given filename
         self.xlsxFile = xlsxwriter.Workbook(filename)
         #start generating
-        self.generateFixtures()
+        self.generateFixtureSheet()
         self.generateTable()
         self.generateRules()
         #close file
