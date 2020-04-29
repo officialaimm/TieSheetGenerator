@@ -4,10 +4,11 @@ from math import ceil
 import xlsxwriter
 
 class TieSheet:
-    def __init__(self,playersEachGame,scoreRule,preferredGameEachDay):
+    def __init__(self,playersEachGame,winnerScore,preferredGameEachDay,scoreRule={}):
         self.playersEachGame = playersEachGame
-        self.scoreRule = scoreRule
+        self.winnerScore = winnerScore
         self.preferredGameEachDay = preferredGameEachDay
+        self.scoreRule = scoreRule
         #CONSTANTS
         #
         #FIXTURE_CONSTANT
@@ -98,9 +99,28 @@ class TieSheet:
                     row=row+1
                 ),
                 #points
-                "",
+                "=SUM(FILTER({fixtureSheet}!{fixturePointCol}{fixtureRowStart}:{fixturePointCol}{fixtureRowEnd},{fixtureSheet}!{fixturePlayerCol}{fixtureRowStart}:{fixturePlayerCol}{fixtureRowEnd}={column}{row}))"
+                .format(
+                    fixtureSheet=self.FIXTURES_TITLE,
+                    fixturePointCol=self.pointsCol,
+                    fixturePlayerCol=self.playerCol,
+                    fixtureRowStart=self.rowWithPointsStart,
+                    fixtureRowEnd=self.rowWithPointsEnd,
+                    column="B",
+                    row=row+1
+                ),
                 #wins
-                "",
+                "=COUNT(FILTER({fixtureSheet}!{fixturePointCol}{fixtureRowStart}:{fixturePointCol}{fixtureRowEnd},({fixtureSheet}!{fixturePlayerCol}{fixtureRowStart}:{fixturePlayerCol}{fixtureRowEnd}={column}{row}) * ({fixtureSheet}!{fixturePointCol}{fixtureRowStart}:{fixturePointCol}{fixtureRowEnd}={score}) ))"
+                .format(
+                    fixtureSheet=self.FIXTURES_TITLE,
+                    fixturePointCol=self.pointsCol,
+                    fixturePlayerCol=self.playerCol,
+                    fixtureRowStart=self.rowWithPointsStart,
+                    fixtureRowEnd=self.rowWithPointsEnd,
+                    column="B",
+                    row=row+1,
+                    score=self.winnerScore
+                ),
             ])
             row+=1
     def generateRules(self):
