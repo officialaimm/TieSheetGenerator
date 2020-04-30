@@ -27,11 +27,14 @@ class TieSheet:
         self._TABLE_PLAYED = "Games Played"
         self._TABLE_POINTS = "Points"
         self._TABLE_WINS = "Wins"
+        # SORTED_TABLE CONSTANT
+        self._SORTED_TABLE_TITLE = "Table(Sorted)"
         # RULE_CONSTANT
         self._RULES_TITLE = "Rules"
 
     def _generateFixture(self):
-        fixtures = list(combinations(self._participants, self._playersEachGame))
+        fixtures = list(combinations(
+            self._participants, self._playersEachGame))
         shuffle(fixtures)
         return fixtures
 
@@ -78,10 +81,11 @@ class TieSheet:
         self._rowWithPointsEnd = row
 
     def _generateTable(self):
+        # Add sorted_table sheet before table
+        sheetSorted = self._xlsxFile.add_worksheet(self._SORTED_TABLE_TITLE)
         sheet = self._xlsxFile.add_worksheet(self._TABLE_TITLE)
         row = 0
         sheet.write_row(row, 0, [
-            self._TABLE_INDEX,
             self._TABLE_PLAYER,
             self._TABLE_PLAYED,
             self._TABLE_POINTS,
@@ -92,7 +96,6 @@ class TieSheet:
         row += 1
         for index, participant in enumerate(self._participants):
             sheet.write_row(row, 0, [
-                index+1,
                 participant,
                 # matches played
                 "=COUNT(FILTER({fixtureSheet}!{fixturePointCol}{fixtureRowStart}:{fixturePointCol}{fixtureRowEnd},{fixtureSheet}!{fixturePlayerCol}{fixtureRowStart}:{fixturePlayerCol}{fixtureRowEnd}={column}{row}))"
@@ -130,6 +133,14 @@ class TieSheet:
                 ),
             ])
             row += 1
+        sheetSorted.write_row(0, 0, [
+            "=SORT(SORT({tableSheet}!A:Z,{winsColumnNumber},FALSE),{pointsColumnNumber},FALSE)"
+            .format(
+                tableSheet=self._TABLE_TITLE,
+                winsColumnNumber="5",
+                pointsColumnNumber="4"
+            ),
+        ])
 
     def _generateRules(self):
         sheet = self._xlsxFile.add_worksheet(self._RULES_TITLE)
